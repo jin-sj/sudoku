@@ -29,7 +29,6 @@ void display(int * array) {
             }
         }
     }
-    return 1;
 }
 
 
