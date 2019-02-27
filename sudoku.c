@@ -1,38 +1,94 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "sudoku.h"
 
 #define TRUE 1
 #define FALSE 0
 #define EMPTY 0
 #define NUM_ROWS 9
-#define NUM_COLS 9
+//#define NUM_COLS 9
+#define MIN_VALUE 1
+#define MAX_VALUE 9
 
-void create_empty_puzzle(int * array, int row, int col) {
-    array = {{EMPTY}};
+int current_row;
+int current_col;
+
+void create_sample_puzzle(int (*array)[NUM_COLS]) {
+    add_permanent(array, 0, 2, -4);
+
+    add_permanent(array, 0, 2, -4);
+    add_permanent(array, 0, 3, -5);
+    add_permanent(array, 0, 7, -2);
+    add_permanent(array, 0, 8, -9);
+
+    add_permanent(array, 1, 2, -5);
+    add_permanent(array, 1, 6, -9);
+    add_permanent(array, 1, 9, -1);
+
+    add_permanent(array, 2, 1, -7);
+    add_permanent(array, 2, 5, -6);
+    add_permanent(array, 2, 8, -4);
+    add_permanent(array, 2, 9, -3);
+
+    add_permanent(array, 3, 2, -6);
+    add_permanent(array, 3, 6, -2);
+    add_permanent(array, 3, 8, -8);
+    add_permanent(array, 3, 9, -7);
+
+    add_permanent(array, 4, 0, -1);
+    add_permanent(array, 4, 1, -9);
+    add_permanent(array, 4, 6, -7);
+    add_permanent(array, 4, 7, -4);
+
+    add_permanent(array, 5, 1, -5);
+    add_permanent(array, 5, 5, -8);
+    add_permanent(array, 5, 6, -3);
+
+    add_permanent(array, 6, 0, -6);
+    add_permanent(array, 6, 6, -1);
+    add_permanent(array, 6, 8, -5);
+
+    add_permanent(array, 7, 2, -3);
+    add_permanent(array, 7, 3, -5);
+    add_permanent(array, 7, 6, -8);
+    add_permanent(array, 7, 7, -6);
+    add_permanent(array, 7, 8, -9);
+
+    add_permanent(array, 8, 1, -4);
+    add_permanent(array, 8, 2, -2);
+    add_permanent(array, 8, 3, -9);
+    add_permanent(array, 8, 4, -1);
+    add_permanent(array, 8, 6, -3);
 }
 
-void display(int * array) {
-    int i;
-    int j;
-    for (i = 0; i < 9; i++) {
-        for (j = 0; j < 9; j++) {
-            if (!(abs(array[i][j]) > 0 && abs(array[i][j]) < 10)) {
-                if (j != 8) {
-                    if (j == 2 || j == 5) {
-                        printf("%d | ", abs(array[i][j]));
-                    } else {
-                        printf("%d, ", abs(array[i][j]));
-                    }
+void create_empty_puzzle(int (*array)[NUM_COLS]) {
+    int r, c;
+    for (r = 0; r < NUM_ROWS; ++r) {
+        for (c = 0; c < NUM_COLS; ++c) {
+            array[r][c] = EMPTY;
+        }
+    }
+    //array = {{EMPTY}};
+}
+
+void display(int (*array)[NUM_COLS]) {
+    int r;
+    int c;
+    for (r = 0; r < NUM_ROWS; r++) {
+        for (c = 0; c < NUM_COLS; c++) {
+            if (!(abs(array[r][c]) > 0 && abs(array[r][c]) < 10)) {
+                if (c == 2 || c == 5) {
+                    printf("%d | ", abs(array[r][c]));
                 } else {
-                    printf("%d", abs(array[i][j]));
+                    printf("%d, ", abs(array[r][c]));
                 }
             }
         }
+        printf("\n");
     }
 }
 
-
-void set_cell_value(int * array, int row, int col, int value, int is_permanent) {
+void set_cell_value(int (*array)[NUM_COLS], int row, int col, int value, int is_permanent) {
     if (value > 0 && value < 10) {
         if (is_permanent) {
             array[row][col] = -1 * value;
@@ -48,17 +104,121 @@ void set_cell_value(int * array, int row, int col, int value, int is_permanent) 
     }
 }
 
-int check_puzzle(int * array, int row, int col) {
-    return 0;
+void add_guess(int (*array)[NUM_COLS], int row, int col, int value) {
+    set_cell_value(array, row, col, value, FALSE);
 }
 
-int get_value_in(int * array, int row, int col) {
+void add_permanent(int (*array)[NUM_COLS], int row, int col, int value) {
+    set_cell_value(array, row, col, value, TRUE);
+}
+
+void reset_cell(int (*array)[NUM_COLS], int row, int col) {
+    set_cell_value(array, row, col, EMPTY, FALSE);
+}
+
+int get_value_in(int (*array)[NUM_COLS], int row, int col) {
     return array[row][col];
 }
 
-int * get_allowed_values(int * array, int * allowed int row, int col) {
-    return allowed;
+int sudoku_solver(int (*array)[NUM_COLS]) {
+    int r, c;
+    int test_value;
+    for (r = 0; r < NUM_ROWS; r += 1) {
+        for (c = 0; c < NUM_COLS; c += 1) {
+            if (array[r][c] == EMPTY) {
+                for (test_value = MIN_VALUE; test_value < MAX_VALUE; ++test_value) {
+                    if (is_legal_move(array, r, c, test_value)) {
+                        add_guess(array, r, c, test_value);
+                        if (sudoku_solver(array) == TRUE) {
+                            return TRUE;
+                        } else {
+                            reset_cell(array, r, c);
+                        }
+                    }
+                }
+                return FALSE;
+            }
+        }
+    }
+    printf("SOLVED!");
+    return TRUE;
 }
+
+int is_legal_move(int (*array)[NUM_COLS], int row, int col, int value) {
+    if (!is_permanent_value(array, row, col) &&
+        !value_in_row(array, row, value) &&
+        !value_in_col(array, col, value) &&
+        !value_in_square(array, row, col, value)) {
+        return TRUE;
+    } else {
+        return FALSE;
+    }
+}
+
+int is_permanent_value(int (*array)[NUM_COLS], int row, int col) {
+    if (get_value_in(array, row, col) < 0) {
+        return TRUE;
+    } else {
+        return FALSE;
+    }
+}
+
+int value_in_row(int (*array)[NUM_COLS], int row, int value) {
+    int c;
+    for (c = 0; c < NUM_COLS; c += 1) {
+        if (array[row][c] == value) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+int value_in_col(int (*array)[NUM_COLS], int col, int value) {
+    int r;
+    for (r = 0; r < NUM_ROWS; r++) {
+        if (array[r][col] == value) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+int value_in_square(int (*array)[NUM_COLS], int row, int col, int value) {
+    int r, c;
+    int r_start, r_end;
+    int c_start, c_end;
+    if (row <= 2) {
+        r_start = 0;
+        r_end = 2;
+    } else if (row <= 5) {
+        r_start = 3;
+        r_end = 5;
+    } else {
+        r_start = 5;
+        r_end = 8;
+    }
+
+    if (col <= 2) {
+        c_start = 0;
+        c_end = 2;
+    } else if (col <= 5) {
+        c_start = 3;
+        c_end = 5;
+    } else  {
+        c_start = 6;
+        c_end = 8;
+    }
+
+    for (r = r_start; r <= r_end; r++) {
+        for (c = c_start; c <= c_end; c++) {
+            if (array[r][c] == value) {
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}
+
 
 /** Checks if the puzzle is full
  *
@@ -67,7 +227,7 @@ int * get_allowed_values(int * array, int * allowed int row, int col) {
  * @param col
  * @return
  */
-int is_full(int * array, int row, int col) {
+int is_full(int (*array)[NUM_COLS], int row, int col) {
     int r, c;
     for (r = 0; r < NUM_ROWS; r++) {
         for (c = 0; c < NUM_COLS; c++) {
@@ -83,21 +243,34 @@ int is_full(int * array, int row, int col) {
 /** Resets non-permanent values to 0
  *
  */
-void reset(int * array) {
-    int r, c,;
+void reset(int (*array)[NUM_COLS]) {
+    int r, c;
     for (r = 0; r < NUM_ROWS; r++) {
         for (c = 0; c < NUM_COLS; c++) {
             int value = get_value_in(array, r, c);
             if (value > 0) {
-                set_cell_value(array, r, c, EMPTY, FALSE);
+                reset_cell(array, r, c);
             }
         }
     }
+}
 
+int test(int (*array)[NUM_COLS]) {
+    if (sudoku_solver(array)) {
+        printf("SOLVER is probably working");
+        return TRUE;
+    } else {
+        printf("SOLVER is NOT working");
+        return FALSE;
+    }
 }
 
 int main(void) {
-    int board[9][9];
-    create_sudoku_puzzle(board)
+    int board[NUM_ROWS][NUM_COLS];
+    int sample_board[NUM_ROWS][NUM_COLS];
+    create_empty_puzzle(sample_board);
+    create_sample_puzzle(sample_board);
+    display(sample_board);
+    //sudoku_solver(sample_board);
     return 0;
 }
