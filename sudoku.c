@@ -14,51 +14,51 @@ int current_row;
 int current_col;
 
 void create_sample_puzzle(int (*array)[NUM_COLS]) {
-    add_permanent(array, 0, 2, -4);
+    add_permanent(array, 0, 2, 4);
 
-    add_permanent(array, 0, 2, -4);
-    add_permanent(array, 0, 3, -5);
-    add_permanent(array, 0, 7, -2);
-    add_permanent(array, 0, 8, -9);
+    add_permanent(array, 0, 2, 4);
+    add_permanent(array, 0, 3, 5);
+    add_permanent(array, 0, 7, 2);
+    add_permanent(array, 0, 8, 9);
 
-    add_permanent(array, 1, 2, -5);
-    add_permanent(array, 1, 6, -9);
-    add_permanent(array, 1, 9, -1);
+    add_permanent(array, 1, 2, 5);
+    add_permanent(array, 1, 6, 9);
+    add_permanent(array, 1, 9, 1);
 
-    add_permanent(array, 2, 1, -7);
-    add_permanent(array, 2, 5, -6);
-    add_permanent(array, 2, 8, -4);
-    add_permanent(array, 2, 9, -3);
+    add_permanent(array, 2, 1, 7);
+    add_permanent(array, 2, 5, 6);
+    add_permanent(array, 2, 8, 4);
+    add_permanent(array, 2, 9, 3);
 
-    add_permanent(array, 3, 2, -6);
-    add_permanent(array, 3, 6, -2);
-    add_permanent(array, 3, 8, -8);
-    add_permanent(array, 3, 9, -7);
+    add_permanent(array, 3, 2, 6);
+    add_permanent(array, 3, 6, 2);
+    add_permanent(array, 3, 8, 8);
+    add_permanent(array, 3, 9, 7);
 
-    add_permanent(array, 4, 0, -1);
-    add_permanent(array, 4, 1, -9);
-    add_permanent(array, 4, 6, -7);
-    add_permanent(array, 4, 7, -4);
+    add_permanent(array, 4, 0, 1);
+    add_permanent(array, 4, 1, 9);
+    add_permanent(array, 4, 6, 7);
+    add_permanent(array, 4, 7, 4);
 
-    add_permanent(array, 5, 1, -5);
-    add_permanent(array, 5, 5, -8);
-    add_permanent(array, 5, 6, -3);
+    add_permanent(array, 5, 1, 5);
+    add_permanent(array, 5, 5, 8);
+    add_permanent(array, 5, 6, 3);
 
-    add_permanent(array, 6, 0, -6);
-    add_permanent(array, 6, 6, -1);
-    add_permanent(array, 6, 8, -5);
+    add_permanent(array, 6, 0, 6);
+    add_permanent(array, 6, 6, 1);
+    add_permanent(array, 6, 8, 5);
 
-    add_permanent(array, 7, 2, -3);
-    add_permanent(array, 7, 3, -5);
-    add_permanent(array, 7, 6, -8);
-    add_permanent(array, 7, 7, -6);
-    add_permanent(array, 7, 8, -9);
+    add_permanent(array, 7, 2, 3);
+    add_permanent(array, 7, 3, 5);
+    add_permanent(array, 7, 6, 8);
+    add_permanent(array, 7, 7, 6);
+    add_permanent(array, 7, 8, 9);
 
-    add_permanent(array, 8, 1, -4);
-    add_permanent(array, 8, 2, -2);
-    add_permanent(array, 8, 3, -9);
-    add_permanent(array, 8, 4, -1);
-    add_permanent(array, 8, 6, -3);
+    add_permanent(array, 8, 1, 4);
+    add_permanent(array, 8, 2, 2);
+    add_permanent(array, 8, 3, 9);
+    add_permanent(array, 8, 4, 1);
+    add_permanent(array, 8, 6, 3);
 }
 
 void create_empty_puzzle(int (*array)[NUM_COLS]) {
@@ -76,12 +76,10 @@ void display(int (*array)[NUM_COLS]) {
     int c;
     for (r = 0; r < NUM_ROWS; r++) {
         for (c = 0; c < NUM_COLS; c++) {
-            if (!(abs(array[r][c]) > 0 && abs(array[r][c]) < 10)) {
-                if (c == 2 || c == 5) {
-                    printf("%d | ", abs(array[r][c]));
-                } else {
-                    printf("%d, ", abs(array[r][c]));
-                }
+            if (c == 2 || c == 5) {
+                printf("%d | ", abs(array[r][c]));
+            } else {
+                printf("%d ", abs(array[r][c]));
             }
         }
         printf("\n");
@@ -89,18 +87,12 @@ void display(int (*array)[NUM_COLS]) {
 }
 
 void set_cell_value(int (*array)[NUM_COLS], int row, int col, int value, int is_permanent) {
-    if (value > 0 && value < 10) {
+    if (value >= 0 && value < 10) {
         if (is_permanent) {
             array[row][col] = -1 * value;
         } else {
-            if (array[row][col] > 0 && array[row][col] < 10) {
-                array[row][col] = value;
-            } else {
-                printf("(%d, %d) is a permanent value\n", row, col);
-            }
+            array[row][col] = value;
         }
-    } else {
-        printf("Please provide a valid value [1-9]\n");
     }
 }
 
@@ -123,8 +115,8 @@ int get_value_in(int (*array)[NUM_COLS], int row, int col) {
 int sudoku_solver(int (*array)[NUM_COLS]) {
     int r, c;
     int test_value;
-    for (r = 0; r < NUM_ROWS; r += 1) {
-        for (c = 0; c < NUM_COLS; c += 1) {
+    for (r = 0; r < NUM_ROWS; ++r) {
+        for (c = 0; c < NUM_COLS; ++c) {
             if (array[r][c] == EMPTY) {
                 for (test_value = MIN_VALUE; test_value < MAX_VALUE; ++test_value) {
                     if (is_legal_move(array, r, c, test_value)) {
@@ -271,6 +263,6 @@ int main(void) {
     create_empty_puzzle(sample_board);
     create_sample_puzzle(sample_board);
     display(sample_board);
-    //sudoku_solver(sample_board);
-    return 0;
+    sudoku_solver(sample_board);
+    return 1;
 }
