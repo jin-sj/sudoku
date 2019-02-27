@@ -15,34 +15,32 @@ int current_col;
 
 void create_sample_puzzle(int (*array)[NUM_COLS]) {
     add_permanent(array, 0, 2, 4);
-
-    add_permanent(array, 0, 2, 4);
-    add_permanent(array, 0, 3, 5);
-    add_permanent(array, 0, 7, 2);
+    add_permanent(array, 0, 3, 3);
+    add_permanent(array, 0, 6, 2);
     add_permanent(array, 0, 8, 9);
 
     add_permanent(array, 1, 2, 5);
-    add_permanent(array, 1, 6, 9);
-    add_permanent(array, 1, 9, 1);
+    add_permanent(array, 1, 5, 9);
+    add_permanent(array, 1, 8, 1);
 
     add_permanent(array, 2, 1, 7);
-    add_permanent(array, 2, 5, 6);
-    add_permanent(array, 2, 8, 4);
-    add_permanent(array, 2, 9, 3);
+    add_permanent(array, 2, 4, 6);
+    add_permanent(array, 2, 7, 4);
+    add_permanent(array, 2, 8, 3);
 
     add_permanent(array, 3, 2, 6);
-    add_permanent(array, 3, 6, 2);
-    add_permanent(array, 3, 8, 8);
-    add_permanent(array, 3, 9, 7);
+    add_permanent(array, 3, 5, 2);
+    add_permanent(array, 3, 7, 8);
+    add_permanent(array, 3, 8, 7);
 
     add_permanent(array, 4, 0, 1);
     add_permanent(array, 4, 1, 9);
-    add_permanent(array, 4, 6, 7);
-    add_permanent(array, 4, 7, 4);
+    add_permanent(array, 4, 5, 7);
+    add_permanent(array, 4, 6, 4);
 
     add_permanent(array, 5, 1, 5);
-    add_permanent(array, 5, 5, 8);
-    add_permanent(array, 5, 6, 3);
+    add_permanent(array, 5, 4, 8);
+    add_permanent(array, 5, 5, 3);
 
     add_permanent(array, 6, 0, 6);
     add_permanent(array, 6, 6, 1);
@@ -50,9 +48,9 @@ void create_sample_puzzle(int (*array)[NUM_COLS]) {
 
     add_permanent(array, 7, 2, 3);
     add_permanent(array, 7, 3, 5);
-    add_permanent(array, 7, 6, 8);
-    add_permanent(array, 7, 7, 6);
-    add_permanent(array, 7, 8, 9);
+    add_permanent(array, 7, 5, 8);
+    add_permanent(array, 7, 6, 6);
+    add_permanent(array, 7, 7, 9);
 
     add_permanent(array, 8, 1, 4);
     add_permanent(array, 8, 2, 2);
@@ -109,7 +107,7 @@ void reset_cell(int (*array)[NUM_COLS], int row, int col) {
 }
 
 int get_value_in(int (*array)[NUM_COLS], int row, int col) {
-    return array[row][col];
+    return abs(array[row][col]);
 }
 
 int sudoku_solver(int (*array)[NUM_COLS]) {
@@ -128,11 +126,14 @@ int sudoku_solver(int (*array)[NUM_COLS]) {
                         }
                     }
                 }
+                printf("Not solvable\n");
+                display(array);
                 return FALSE;
             }
         }
     }
-    printf("SOLVED!");
+    printf("SOLVED!\n");
+    display(array);
     return TRUE;
 }
 
@@ -157,8 +158,8 @@ int is_permanent_value(int (*array)[NUM_COLS], int row, int col) {
 
 int value_in_row(int (*array)[NUM_COLS], int row, int value) {
     int c;
-    for (c = 0; c < NUM_COLS; c += 1) {
-        if (array[row][c] == value) {
+    for (c = 0; c < NUM_COLS; ++c) {
+        if (get_value_in(array, row, c) == value) {
             return TRUE;
         }
     }
@@ -167,8 +168,8 @@ int value_in_row(int (*array)[NUM_COLS], int row, int value) {
 
 int value_in_col(int (*array)[NUM_COLS], int col, int value) {
     int r;
-    for (r = 0; r < NUM_ROWS; r++) {
-        if (array[r][col] == value) {
+    for (r = 0; r < NUM_ROWS; ++r) {
+        if (get_value_in(array, r, col) == value) {
             return TRUE;
         }
     }
@@ -186,7 +187,7 @@ int value_in_square(int (*array)[NUM_COLS], int row, int col, int value) {
         r_start = 3;
         r_end = 5;
     } else {
-        r_start = 5;
+        r_start = 6;
         r_end = 8;
     }
 
@@ -201,9 +202,9 @@ int value_in_square(int (*array)[NUM_COLS], int row, int col, int value) {
         c_end = 8;
     }
 
-    for (r = r_start; r <= r_end; r++) {
-        for (c = c_start; c <= c_end; c++) {
-            if (array[r][c] == value) {
+    for (r = r_start; r <= r_end; ++r) {
+        for (c = c_start; c <= c_end; ++c) {
+            if (get_value_in(array, r, c) == value) {
                 return TRUE;
             }
         }
@@ -249,10 +250,10 @@ void reset(int (*array)[NUM_COLS]) {
 
 int test(int (*array)[NUM_COLS]) {
     if (sudoku_solver(array)) {
-        printf("SOLVER is probably working");
+        printf("SOLVER is probably working\n");
         return TRUE;
     } else {
-        printf("SOLVER is NOT working");
+        printf("SOLVER is NOT working\n");
         return FALSE;
     }
 }
@@ -263,6 +264,7 @@ int main(void) {
     create_empty_puzzle(sample_board);
     create_sample_puzzle(sample_board);
     display(sample_board);
+    //printf("value in row: %d\n", value_in_row(sample_board, 0, 4));
     sudoku_solver(sample_board);
     return 1;
 }
