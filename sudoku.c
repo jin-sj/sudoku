@@ -240,7 +240,7 @@ void reset(int (*array)[NUM_COLS]) {
     int r, c;
     for (r = 0; r < NUM_ROWS; r++) {
         for (c = 0; c < NUM_COLS; c++) {
-            int value = get_value_in(array, r, c);
+            int value = array[r][c];
             if (value > 0) {
                 reset_cell(array, r, c);
             }
