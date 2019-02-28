@@ -8,7 +8,6 @@
 static const int NUM_COLS = 9;
 
 void create_empty_puzzle(int (*array)[NUM_COLS]);
-void create_sample_puzzle(int (*array)[NUM_COLS]);
 void create_new_puzzle(int (*array)[NUM_COLS]);
 
 void shuffle_list(int * list, int size);
