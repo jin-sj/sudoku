@@ -28,10 +28,11 @@ int sudoku_solver(int (*array)[NUM_COLS]);
 int generate_random_number(int low, int high);
 
 int is_legal_move(int (*array)[NUM_COLS] , int row, int col, int value);
-int is_permanent_value(int (*array)[NUM_COLS], int row, int col);
+int is_permanent_cell(int (*array)[NUM_COLS], int row, int col);
 int value_in_row(int (*array)[NUM_COLS], int row, int col);
 int value_in_col(int (*array)[NUM_COLS], int row, int col);
 int value_in_square(int (*array)[NUM_COLS], int row, int col, int value);
+void print_possible_values(int (*array)[NUM_COLS], int row, int col);
 
 int is_full(int (*array)[NUM_COLS], int row, int col);
 void reset(int (*array)[NUM_COLS]);

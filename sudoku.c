@@ -218,7 +218,11 @@ void set_cell_value(int (*array)[NUM_COLS], int row, int col, int value, int is_
  * @param value  Value to add
  */
 void add_guess(int (*array)[NUM_COLS], int row, int col, int value) {
-    set_cell_value(array, row, col, value, FALSE);
+    if (!is_permanent_cell(array, row, col)) {
+        set_cell_value(array, row, col, value, FALSE);
+    } else {
+        printf("(%d, %d) is a permanent value!", row, col);
+    }
 }
 
 /** Adds permanent values to the puzzle
@@ -288,7 +292,7 @@ int sudoku_solver(int (*array)[NUM_COLS]) {
  * @param value  Value to check
  */
 int is_legal_move(int (*array)[NUM_COLS], int row, int col, int value) {
-    if (!is_permanent_value(array, row, col) &&
+    if (!is_permanent_cell(array, row, col) &&
         !value_in_row(array, row, value) &&
         !value_in_col(array, col, value) &&
         !value_in_square(array, row, col, value)) {
@@ -305,7 +309,7 @@ int is_legal_move(int (*array)[NUM_COLS], int row, int col, int value) {
  * @param col Column index
  * @return Whether it is a permanent cell
  */
-int is_permanent_value(int (*array)[NUM_COLS], int row, int col) {
+int is_permanent_cell(int (*array)[NUM_COLS], int row, int col) {
     if (get_value_in(array, row, col) < 0) {
         return TRUE;
     } else {
@@ -344,6 +348,7 @@ int value_in_col(int (*array)[NUM_COLS], int col, int value) {
     }
     return FALSE;
 }
+
 
 /** Checks if the value is in a given col
  *
@@ -388,6 +393,20 @@ int value_in_square(int (*array)[NUM_COLS], int row, int col, int value) {
     return FALSE;
 }
 
+/** Prints possible values of the current cell
+ *
+ * @param array
+ * @param row
+ * @param col
+ */
+void print_possible_values(int (*array)[NUM_COLS], int row, int col) {
+    int i;
+    for (i = 1; i < MAX_VALUE + 1; ++i) {
+        if (is_legal_move(array, row, col, i)) {
+            printf("%d, ", i);
+        }
+    }
+}
 
 /** Checks if the puzzle is full
  *
@@ -424,3 +443,111 @@ void reset(int (*array)[NUM_COLS]) {
 }
 
 
+int main() {
+    printf("Hello, this is the Sudoku Solver!\n");
+
+    int puzzle[NUM_ROWS][NUM_COLS];
+    int original_puzzle[NUM_ROWS][NUM_COLS];
+    create_empty_puzzle(original_puzzle);
+    create_empty_puzzle(puzzle);
+    create_new_puzzle(original_puzzle);
+    copy_array(original_puzzle, puzzle);
+
+    int menuSelection;
+    int menuInputCorrect = 0;
+    int input;
+    int quit = 0;
+
+    printf("Welcome to the array shift program.\n");
+
+    //TODO:
+    //create a new puzzle
+    display(puzzle);
+    //loop to solve puzzle
+    do {
+        do {
+            printf("Enter 1 to input a value.\n");
+            printf("Enter 2 to start the puzzle over.\n");
+            printf("Enter 3 to show solution.\n");
+            printf("Enter 4 to display initial puzzle.\n");
+            printf("Enter 5 to end working on this puzzle and create another one.\n");
+            printf("Enter 6 to quit program\n");
+
+            scanf("%d", &menuSelection);
+
+            if ((menuSelection > 0 && menuSelection < 7)) {
+                menuInputCorrect = 1;
+            } else {
+                printf("Please enter a valid menu number.\n");
+            }
+        } while (menuInputCorrect == 0);
+
+        if (menuSelection == 1) {
+            int inputCorrectMenu1 = 0;
+            do {
+                int inputRow, inputColumn;
+                printf("What row do you want to add a value to (0 - 8)?\n");
+                scanf("%d", &inputRow);
+                printf("What column do you want to add a value to (0 - 8)?\n");
+                scanf("%d", &inputColumn);
+                if (inputRow >= 0 && inputRow < 9 && inputColumn > 0 && inputColumn < 10) {
+                    inputCorrectMenu1 = 1;
+                    //TODO input value, call method
+                    //TODO display puzzle
+                    int inputCorrectValue = 0;
+                    int menuSelectionValue = 0;
+                    do {
+                        printf("Enter 1 to input a value.\n");
+                        printf("Enter 2 to see possible values.\n");
+                        printf("Enter 3 to go back to main menu.\n");
+
+                        scanf("%d", &menuSelectionValue);
+                        if ((menuSelectionValue > 0 && menuSelectionValue < 4)) {
+                            inputCorrectValue = 1;
+                        } else {
+                            printf("Please enter a valid menu number.\n");
+                        }
+                    } while (inputCorrectValue == 0);
+
+                    int inputValue;
+                    if (menuSelectionValue == 1) {
+                        printf("What value do you want to input?\n");
+                        scanf("%d", &inputValue);
+                        add_guess(puzzle, inputRow, inputColumn, inputValue);
+                        //TODO: if input value is valid, add to puzzle
+                        //if not valid goes back to menu
+                    } else if (menuSelectionValue == 2) {
+                        printf("Possible values:\n");
+                        print_possible_values(puzzle, inputRow, inputColumn);
+                    } else if (menuSelectionValue == 3){
+                        inputCorrectMenu1 = 1;
+                    }
+                }
+            } while (inputCorrectMenu1 == 0);
+        }
+        else if (menuSelection == 2) {
+            copy_array(original_puzzle, puzzle);
+        }
+        else if (menuSelection == 3) {
+            printf("This is the solution: \n");
+            sudoku_solver(puzzle);
+            display(puzzle);
+        }
+        else if (menuSelection == 4) {
+            //TODO display initial puzzle
+            display(original_puzzle);
+        }
+        else if (menuSelection == 5) {
+            printf("Creating another puzzle...\n");
+            create_new_puzzle(original_puzzle);
+            copy_array(original_puzzle, puzzle);
+            //TODO display puzzle
+            display(puzzle);
+        }
+        else {
+            quit = 1;
+        }
+    } while (quit == 0);
+
+    return 0;
+}
