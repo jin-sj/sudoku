@@ -84,42 +84,67 @@ void create_new_puzzle(int (*array)[NUM_COLS]) {
     create_empty_puzzle(test_array);
 
     //fewest clues possible for proper sudoku is 17
-    int starting_amount_needed = 19;
-    int numbers_inserted = 0;
+    int starting_amount_needed = 25;
 
-    int possible_values[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    int possible_values[9] = {1, 2, 3, 4, 5, 6, 7, 8 ,9};
+    int shuffled_list[81];
 
-    while (numbers_inserted < starting_amount_needed) {
-        printf("Added: %d numbers", numbers_inserted);
-        //get random unassigned cell
-        int random_row = generate_random_number(0, 8);
-        int random_col = generate_random_number(0, 8);
+    int tries_done = 0;
+    int max_tries = 100;
+    while (tries_done < max_tries) {
+        tries_done += 1;
+        shuffle_list(shuffled_list, 81);
+        int numbers_inserted = 0;
+        while (numbers_inserted < starting_amount_needed) {
+            //get random unassigned cell
+            int shuffled_index = shuffled_list[numbers_inserted];
+            int random_row = shuffled_index / 9;
+            int random_col = shuffled_index % 9;
 
-        while (get_value_in(array, random_row, random_col) != EMPTY) {
-            random_row = generate_random_number(0, 8);
-            random_col = generate_random_number(0, 8);
-        }
+            int test_value;
+            int random_possible_value_index = generate_random_number(0, 8);
 
-        int test_value;
-        int random_possible_value_index = generate_random_number(0, 8);
-
-        int i;
-        int index;
-        for (i = 0; i < 9; ++i) {
-            index = (i + random_possible_value_index) % 8;
-            test_value = possible_values[index];
-            if (is_legal_move(array, random_row, random_col, test_value)) {
-                add_permanent(test_array, random_row, random_col, test_value);
-                if (sudoku_solver(test_array)) {
-                    add_permanent(array, random_row, random_col, test_value);
-                    copy_array(array, test_array);
-                    break;
+            int index;
+            int i;
+            for (i = 0; i < 9; ++i) {
+                if (get_value_in(test_array, random_row, random_col) == EMPTY) {
+                    index = (i + random_possible_value_index) % 8;
+                    test_value = possible_values[index];
+                    if (is_legal_move(test_array, random_row, random_col, test_value)) {
+                        add_permanent(test_array, random_row, random_col, test_value);
+                    }
                 }
             }
+            numbers_inserted += 1;
         }
-        numbers_inserted += 1;
+        copy_array(test_array, array);
+        if (sudoku_solver(test_array)) {
+            break;
+        } else {
+            create_empty_puzzle(test_array);
+        }
     }
-    display(array);
+}
+
+/** Initializes a list from 1 to 81 and shuffles it
+ *
+ * @param list List[81]
+ * @param size size of list
+ */
+void shuffle_list(int * list, int size) {
+    int i;
+    for (i = 0; i < size; ++i) {
+        list[i] = i;
+    }
+
+    size_t p;
+    for (p = 0; p < size; p++)
+    {
+        size_t q = p + rand() / (RAND_MAX / (size - p) + 1);
+        int t = list[q];
+        list[q] = list[p];
+        list[p] = t;
+    }
 }
 
 /** Copies the values from source to target array
@@ -398,15 +423,4 @@ void reset(int (*array)[NUM_COLS]) {
     }
 }
 
-int main(void) {
-    setbuf(stdout, NULL);
-    int board[NUM_ROWS][NUM_COLS];
-    int sample_board[NUM_ROWS][NUM_COLS];
-    //create_empty_puzzle(sample_board);
-    //create_sample_puzzle(sample_board);
-    create_empty_puzzle(board);
-    printf("generating new board\n");
-    create_new_puzzle(board);
-    display(board);
-    return 1;
-}
+

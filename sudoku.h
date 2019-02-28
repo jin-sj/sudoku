@@ -11,6 +11,8 @@ void create_empty_puzzle(int (*array)[NUM_COLS]);
 void create_sample_puzzle(int (*array)[NUM_COLS]);
 void create_new_puzzle(int (*array)[NUM_COLS]);
 
+void shuffle_list(int * list, int size);
+
 void display(int (*array)[NUM_COLS]);
 
 void set_cell_value(int (*array)[NUM_COLS], int row, int col, int value, int is_permanent);
