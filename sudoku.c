@@ -416,10 +416,10 @@ int main() {
 
     //TODO:
     //create a new puzzle
-    display(puzzle);
     //loop to solve puzzle
     do {
         do {
+            display(puzzle);
             printf("Enter 1 to input a value.\n");
             printf("Enter 2 to start the puzzle over.\n");
             printf("Enter 3 to show solution.\n");
@@ -444,10 +444,11 @@ int main() {
                 scanf("%d", &inputRow);
                 printf("What column do you want to add a value to (0 - 8)?\n");
                 scanf("%d", &inputColumn);
-                if (inputRow >= 0 && inputRow < 9 && inputColumn > 0 && inputColumn < 10) {
+                if (inputRow >= 0 && inputRow < 9 && inputColumn >= 0 && inputColumn < 9) {
                     inputCorrectMenu1 = 1;
                     //TODO input value, call method
                     //TODO display puzzle
+                    display(puzzle);
                     int inputCorrectValue = 0;
                     int menuSelectionValue = 0;
                     do {
