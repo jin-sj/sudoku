@@ -6,13 +6,8 @@
 #define TRUE 1
 #define FALSE 0
 #define EMPTY 0
-#define NUM_ROWS 9
-//#define NUM_COLS 9
 #define MIN_VALUE 1
 #define MAX_VALUE 9
-
-int current_row;
-int current_col;
 
 /** Initializes all cells to EMPTY value
  *
@@ -44,32 +39,33 @@ void create_new_puzzle(int (*array)[NUM_COLS]) {
     int shuffled_list[81];
 
     int tries_done = 0;
-    int max_tries = 100;
+    int max_tries = 1000;
     while (tries_done < max_tries) {
         tries_done += 1;
         shuffle_list(shuffled_list, 81);
         int numbers_inserted = 0;
+        int counter = 0;
         while (numbers_inserted < starting_amount_needed) {
+            // fast out for bad random seed
+            if (counter > (numbers_inserted + 4) * 1.5) {
+                break;
+            }
             //get random unassigned cell
             int shuffled_index = shuffled_list[numbers_inserted];
             int random_row = shuffled_index / 9;
             int random_col = shuffled_index % 9;
 
             int test_value;
-            int random_possible_value_index = generate_random_number(0, 8);
 
-            int index;
-            int i;
-            for (i = 0; i < 9; ++i) {
-                if (get_value_in(test_array, random_row, random_col) == EMPTY) {
-                    index = (i + random_possible_value_index) % 8;
-                    test_value = possible_values[index];
-                    if (is_legal_move(test_array, random_row, random_col, test_value)) {
-                        add_permanent(test_array, random_row, random_col, test_value);
-                    }
+            int random_possible_value_index = generate_random_number(0, 8);
+            if (get_value_in(test_array, random_row, random_col) == EMPTY) {
+                test_value = possible_values[random_possible_value_index];
+                if (is_legal_move(test_array, random_row, random_col, test_value)) {
+                    add_permanent(test_array, random_row, random_col, test_value);
+                    numbers_inserted += 1;
                 }
             }
-            numbers_inserted += 1;
+            counter += 1;
         }
         copy_array(test_array, array);
         if (sudoku_solver(test_array)) {
@@ -111,7 +107,7 @@ void copy_array(int (*source_array)[NUM_COLS], int (*target_array)[NUM_COLS]) {
     reset(target_array);
     for (r = 0; r < NUM_ROWS; ++r) {
         for (c = 0; c < NUM_COLS; ++c) {
-            add_permanent(target_array, r, c, get_value_in(source_array, r, c));
+            add_permanent(target_array, r, c, get_abs_value_in(source_array, r, c));
         }
     }
 }
@@ -123,7 +119,6 @@ void copy_array(int (*source_array)[NUM_COLS], int (*target_array)[NUM_COLS]) {
  * @return  Random value
  */
 int generate_random_number(int low, int high) {
-    srand(time(0));
     return (rand() % (high - low + 1)) + low;
 }
 
@@ -172,10 +167,10 @@ void set_cell_value(int (*array)[NUM_COLS], int row, int col, int value, int is_
  * @param value  Value to add
  */
 void add_guess(int (*array)[NUM_COLS], int row, int col, int value) {
-    if (!is_permanent_cell(array, row, col)) {
+    if (is_legal_move(array, row, col, value)) {
         set_cell_value(array, row, col, value, FALSE);
     } else {
-        printf("(%d, %d) is a permanent value!", row, col);
+        printf("Value: %d on (%d, %d) is not legal!\n", value, row + 1, col + 1);
     }
 }
 
@@ -207,8 +202,13 @@ void reset_cell(int (*array)[NUM_COLS], int row, int col) {
  * @param col  Column index
  */
 int get_value_in(int (*array)[NUM_COLS], int row, int col) {
+    return array[row][col];
+}
+
+int get_abs_value_in(int (*array)[NUM_COLS], int row, int col) {
     return abs(array[row][col]);
 }
+
 
 /** Solves the sudoku with the back-tracking algorithm
  *
@@ -280,7 +280,7 @@ int is_permanent_cell(int (*array)[NUM_COLS], int row, int col) {
 int value_in_row(int (*array)[NUM_COLS], int row, int value) {
     int c;
     for (c = 0; c < NUM_COLS; ++c) {
-        if (get_value_in(array, row, c) == value) {
+        if (get_abs_value_in(array, row, c) == value) {
             return TRUE;
         }
     }
@@ -296,7 +296,7 @@ int value_in_row(int (*array)[NUM_COLS], int row, int value) {
 int value_in_col(int (*array)[NUM_COLS], int col, int value) {
     int r;
     for (r = 0; r < NUM_ROWS; ++r) {
-        if (get_value_in(array, r, col) == value) {
+        if (get_abs_value_in(array, r, col) == value) {
             return TRUE;
         }
     }
@@ -339,7 +339,7 @@ int value_in_square(int (*array)[NUM_COLS], int row, int col, int value) {
 
     for (r = r_start; r <= r_end; ++r) {
         for (c = c_start; c <= c_end; ++c) {
-            if (get_value_in(array, r, c) == value) {
+            if (get_abs_value_in(array, r, c) == value) {
                 return TRUE;
             }
         }
@@ -349,32 +349,32 @@ int value_in_square(int (*array)[NUM_COLS], int row, int col, int value) {
 
 /** Prints possible values of the current cell
  *
- * @param array
- * @param row
- * @param col
+ * @param array of puzzle
+ * @param row inputted row
+ * @param col inputted column
  */
 void print_possible_values(int (*array)[NUM_COLS], int row, int col) {
     int i;
     for (i = 1; i < MAX_VALUE + 1; ++i) {
         if (is_legal_move(array, row, col, i)) {
-            printf("%d, ", i);
+            printf("%d  ", i);
         }
     }
+    printf("\n");
 }
 
-/** Checks if the puzzle is full
+/** Checks if the two puzzles are equal
  *
- * @param array
- * @param row
- * @param col
- * @return
+ * @param array puzzle
+ * @param row row
+ * @param col column
+ * @return Boolean whether each element is equal
  */
-int is_full(int (*array)[NUM_COLS], int row, int col) {
+int is_equal(int (*solution)[NUM_COLS], int (*guess_puzzle)[NUM_COLS]) {
     int r, c;
     for (r = 0; r < NUM_ROWS; r++) {
         for (c = 0; c < NUM_COLS; c++) {
-            int value = get_value_in(array, r, c);
-            if (!(abs(value) > 0)) {
+            if (get_value_in(solution, r, c) != get_value_in(guess_puzzle, r, c)) {
                 return FALSE;
             }
         }
@@ -396,29 +396,33 @@ void reset(int (*array)[NUM_COLS]) {
     }
 }
 
-
 int main() {
     printf("Hello, this is the Sudoku Solver!\n");
+    srand(time(0));
 
     int puzzle[NUM_ROWS][NUM_COLS];
     int original_puzzle[NUM_ROWS][NUM_COLS];
+    int solution_puzzle[NUM_ROWS][NUM_COLS];
     create_empty_puzzle(original_puzzle);
     create_empty_puzzle(puzzle);
+    create_empty_puzzle(solution_puzzle);
     create_new_puzzle(original_puzzle);
     copy_array(original_puzzle, puzzle);
+    copy_array(original_puzzle, solution_puzzle);
+    sudoku_solver(solution_puzzle);
 
     int menuSelection;
     int menuInputCorrect = 0;
     int input;
     int quit = 0;
 
-    printf("Welcome to the array shift program.\n");
-
     //TODO:
     //create a new puzzle
     //loop to solve puzzle
     do {
         do {
+            printf("************************************\n");
+            printf("Your puzzle:\n");
             display(puzzle);
             printf("Enter 1 to input a value.\n");
             printf("Enter 2 to start the puzzle over.\n");
@@ -426,6 +430,10 @@ int main() {
             printf("Enter 4 to display initial puzzle.\n");
             printf("Enter 5 to end working on this puzzle and create another one.\n");
             printf("Enter 6 to quit program\n");
+
+            if (is_equal(solution_puzzle, puzzle)) {
+                printf("Congrats! You solved the puzzle!");
+            }
 
             scanf("%d", &menuSelection);
 
@@ -440,11 +448,11 @@ int main() {
             int inputCorrectMenu1 = 0;
             do {
                 int inputRow, inputColumn;
-                printf("What row do you want to add a value to (0 - 8)?\n");
-                scanf("%d", &inputRow);
-                printf("What column do you want to add a value to (0 - 8)?\n");
-                scanf("%d", &inputColumn);
-                if (inputRow >= 0 && inputRow < 9 && inputColumn >= 0 && inputColumn < 9) {
+                printf("What (row, col) do you want to add a value to (1 - 9)?\n");
+                scanf("%d %d", &inputRow, &inputColumn);
+                inputRow = inputRow - 1;
+                inputColumn = inputColumn - 1;
+                if (inputRow >= 0 && inputRow <= 8 && inputColumn >= 0 && inputColumn <= 8) {
                     inputCorrectMenu1 = 1;
                     //TODO input value, call method
                     //TODO display puzzle
@@ -454,7 +462,6 @@ int main() {
                     do {
                         printf("Enter 1 to input a value.\n");
                         printf("Enter 2 to see possible values.\n");
-                        printf("Enter 3 to go back to main menu.\n");
 
                         scanf("%d", &menuSelectionValue);
                         if ((menuSelectionValue > 0 && menuSelectionValue < 4)) {
@@ -474,30 +481,29 @@ int main() {
                     } else if (menuSelectionValue == 2) {
                         printf("Possible values:\n");
                         print_possible_values(puzzle, inputRow, inputColumn);
-                    } else if (menuSelectionValue == 3){
-                        inputCorrectMenu1 = 1;
                     }
+
                 }
             } while (inputCorrectMenu1 == 0);
         }
         else if (menuSelection == 2) {
             copy_array(original_puzzle, puzzle);
+            copy_array(original_puzzle, solution_puzzle);
         }
         else if (menuSelection == 3) {
             printf("This is the solution: \n");
-            sudoku_solver(puzzle);
-            display(puzzle);
+            sudoku_solver(solution_puzzle);
+            display(solution_puzzle);
         }
         else if (menuSelection == 4) {
-            //TODO display initial puzzle
             display(original_puzzle);
         }
         else if (menuSelection == 5) {
             printf("Creating another puzzle...\n");
             create_new_puzzle(original_puzzle);
             copy_array(original_puzzle, puzzle);
-            //TODO display puzzle
-            display(puzzle);
+            copy_array(original_puzzle, solution_puzzle);
+            sudoku_solver(solution_puzzle);
         }
         else {
             quit = 1;

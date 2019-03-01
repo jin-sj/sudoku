@@ -5,6 +5,7 @@
 #ifndef SUDOKU_SUDOKU_H
 #define SUDOKU_SUDOKU_H
 
+static const int NUM_ROWS = 9;
 static const int NUM_COLS = 9;
 
 void create_empty_puzzle(int (*array)[NUM_COLS]);
@@ -18,6 +19,7 @@ void set_cell_value(int (*array)[NUM_COLS], int row, int col, int value, int is_
 void add_guess(int (*array)[NUM_COLS], int row, int col, int value);
 void add_permanent(int (*array)[NUM_COLS], int row, int col, int value);
 int get_value_in(int (*array)[NUM_COLS], int row, int col);
+int get_abs_value_in(int (*array)[NUM_COLS], int row, int col);
 
 void copy_array(int (*source_array)[NUM_COLS], int (*target_array)[NUM_COLS]);
 void reset_cell( int (*array)[NUM_COLS], int row, int col);
@@ -33,6 +35,6 @@ int value_in_col(int (*array)[NUM_COLS], int row, int col);
 int value_in_square(int (*array)[NUM_COLS], int row, int col, int value);
 void print_possible_values(int (*array)[NUM_COLS], int row, int col);
 
-int is_full(int (*array)[NUM_COLS], int row, int col);
+int is_equal(int (*solution)[NUM_COLS], int (*guess_puzzle)[NUM_COLS]);
 void reset(int (*array)[NUM_COLS]);
 #endif //SUDOKU_SUDOKU_H
