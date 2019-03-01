@@ -488,7 +488,6 @@ int main() {
         }
         else if (menuSelection == 2) {
             copy_array(original_puzzle, puzzle);
-            copy_array(original_puzzle, solution_puzzle);
         }
         else if (menuSelection == 3) {
             printf("This is the solution: \n");
